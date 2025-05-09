@@ -1,25 +1,26 @@
 const WebSocket = require('ws');
-const fs = require('fs');
 
+// Initialize WebSocket server
 const wss = new WebSocket.Server({ port: 8080 });
 
 wss.on('connection', (ws) => {
-  console.log('✅ Client connected');
-  
-  ws.on('message', (data) => {
-    console.log('📥 Frame received from client, size:', data.length);
+    console.log('Client connected');
 
-    // You can send this frame to other connected clients (e.g., broadcasting)
-    wss.clients.forEach(client => {
-      if (client !== ws && client.readyState === WebSocket.OPEN) {
-        client.send(data); // Forward the frame to other clients
-      }
+    // When the server receives a message (frame)
+    ws.on('message', (message) => {
+        console.log(`Received frame, size: ${message.length} bytes`);
+        
+        // Broadcast the frame to all clients (you can broadcast to specific clients if needed)
+        wss.clients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(message);  // Send the frame to the client
+            }
+        });
     });
-  });
 
-  ws.on('close', () => {
-    console.log('❌ Client disconnected');
-  });
+    ws.on('close', () => {
+        console.log('Client disconnected');
+    });
 });
 
-console.log('WebSocket server listening on ws://localhost:8080');
+console.log('WebSocket server is running on ws://localhost:8080');
